@@ -23,7 +23,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repo, cleanup, err := buildRepository(cfg)
+	repo, cleanup, storageName, err := buildRepository(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,37 +36,39 @@ func main() {
 	api := controllers.NewAPI(shortener)
 	api.Register(mux)
 
+	handler := controllers.WithLogging(mux)
 	server := &http.Server{
 		Addr:    cfg.Server.Addr,
-		Handler: mux,
+		Handler: handler,
 	}
 
+	log.Printf("storage: %s", storageName)
 	log.Printf("listening on %s", cfg.Server.Addr)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}
 }
 
-func buildRepository(cfg config.Config) (port.LinkRepository, func(), error) {
+func buildRepository(cfg config.Config) (port.LinkRepository, func(), string, error) {
 	switch strings.ToLower(cfg.Storage.Mode) {
 	case "postgres", "pg", "postgresql":
 		db, err := sql.Open("pgx", cfg.Storage.DatabaseURL)
 		if err != nil {
-			return nil, func() {}, err
+			return nil, func() {}, "", err
 		}
 
 		if err := db.Ping(); err != nil {
 			_ = db.Close()
-			return nil, func() {}, err
+			return nil, func() {}, "", err
 		}
 
 		if err := postgres.Migrate(db); err != nil {
 			_ = db.Close()
-			return nil, func() {}, err
+			return nil, func() {}, "", err
 		}
 
-		return postgres.NewRepository(db), func() { _ = db.Close() }, nil
+		return postgres.NewRepository(db), func() { _ = db.Close() }, "postgres", nil
 	default:
-		return memory.NewRepository(), func() {}, nil
+		return memory.NewRepository(), func() {}, "memory", nil
 	}
 }

@@ -46,6 +46,7 @@ func Load(path string) (Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
+			// если конфига нет — создаём дефолтный, чтобы было с чего стартовать
 			if err := writeDefault(path, cfg); err != nil {
 				return cfg, err
 			}

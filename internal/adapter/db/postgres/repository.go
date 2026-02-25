@@ -55,6 +55,7 @@ func (r *Repository) Save(ctx context.Context, link domain.Link) error {
 		return nil
 	}
 
+	// привязываем уникальные ограничения к доменным ошибкам
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
 		switch pgErr.ConstraintName {

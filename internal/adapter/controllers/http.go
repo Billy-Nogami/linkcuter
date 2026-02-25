@@ -110,6 +110,7 @@ func (a *API) handleResolve(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, link.URL, http.StatusFound)
 }
 
+// собираем базовый url, учитываем прокси (x-forwarded-proto)
 func originFromRequest(r *http.Request) string {
 	scheme := "http"
 	if r.TLS != nil {

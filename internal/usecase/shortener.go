@@ -43,6 +43,7 @@ func (s *Shortener) Shorten(ctx context.Context, rawURL string) (domain.Link, er
 		return domain.Link{}, err
 	}
 
+	// пытаемся подобрать уникальный код, редкие коллизии — нормальная ситуация
 	for i := 0; i < s.maxAttempts; i++ {
 		code, err := s.gen.Generate()
 		if err != nil {
