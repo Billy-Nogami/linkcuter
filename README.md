@@ -25,6 +25,12 @@ docker run --rm -p 8080:8080 linkcuter
 docker compose up --build
 ```
 
+## Тесты
+
+```bash
+go test ./...
+```
+
 ## API
 
 ### POST /api/shorten
